@@ -36,6 +36,15 @@ This repository demonstrates AI / Machine Learning workflows using AutoGluon Aut
 
 ---
 
+## 資料集
+使用多種公開的 Machine Learning 資料集，以展示 AutoML 工作流程與不同類型 AI 任務的應用。
+範例資料集含：
+- AutoGluon 官方範例資料集（GitHub）
+- M4 時間序列預測資料集（M4 Forecasting Competition）
+- 其他常見開源 Machine Learning 資料集
+
+--- 
+
 ## 使用技術
 本專案使用以下 AI / Machine Learning 技術：
 - AutoGluon AutoML Framework  
