@@ -67,7 +67,7 @@ Now, let's make predictions on the rabbit toy example.
 
 
 ```python
-sentence = "2023年兔年挂件新年装饰品小挂饰乔迁之喜门挂小兔子"
+sentence = "2023年兔年掛件新年裝飾品小掛飾喬遷之喜門掛小兔子"
 predictions = predictor.predict({'text_snippet': [sentence]})
 visualize_ner(sentence, predictions[0])
 ```

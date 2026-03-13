@@ -51,7 +51,7 @@ output = predictor.predict(dev_data)
 visualize_ner(dev_data["text_snippet"].iloc[0], output[0])
 
 # Predict on custom text
-sentence = "2023年兔年挂件新年装饰品小挂饰乔迁之喜门挂小兔子"
+sentence = "2023年兔年掛件新年裝飾品小掛飾喬遷之喜門掛小兔子"
 predictions = predictor.predict({'text_snippet': [sentence]})
 visualize_ner(sentence, predictions[0])
 ```

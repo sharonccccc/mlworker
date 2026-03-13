@@ -132,73 +132,73 @@ def clean_subgraphs(mermaid_str: str) -> str:
     lines = mermaid_str.splitlines()
     cleaned_lines = []
 
-    subgraph_level = 0  # 当前subgraph层级
+    subgraph_level = 0  # 目前subgraph層級
     in_flowchart_header = False
 
     for line in lines:
         stripped = line.strip()
 
-        # 保留 Mermaid 图的头部，比如 flowchart TD 之类的
+        # 保留 Mermaid 的 header，例如 flowchart TD 等
         if stripped.startswith("flowchart"):
             cleaned_lines.append(line)
             in_flowchart_header = True
             continue
 
-        # subgraph开始
+        # subgraph開始
         if stripped.startswith("subgraph "):
             subgraph_level += 1
             if subgraph_level == 1:
-                cleaned_lines.append(line)  # 只保留最外层subgraph
+                cleaned_lines.append(line)  # 只保留最外層subgraph
             continue
 
-        # subgraph结束
+        # subgraph結束
         if stripped == "end":
             if subgraph_level == 1:
                 cleaned_lines.append(line)
             subgraph_level -= 1
             continue
 
-        # 只保留最外层subgraph内的行
+        # 只保留最外層 subgraph 內的內容
         if subgraph_level == 1:
             cleaned_lines.append(line)
-        # subgraph_level == 0 且不是头部时，跳过所有内容
+        # 若 subgraph_level == 0 且不是 header，則跳過所有內容
 
     return "\n".join(cleaned_lines)
 
 
 import re
 def merge_subflows(flowchart):
-    # 提取外层subgraph内容
+    # 取得最外層 subgraph 的內容
     outer_subgraph_match = re.search(r'subgraph\s+subFlow\[.*?\](.*)end', flowchart, re.S)
     if not outer_subgraph_match:
-        # 没有匹配subFlow就直接返回原内容
+        # 若沒有匹配到 subFlow，則直接回傳原內容
         return flowchart
     outer_content = outer_subgraph_match.group(1).strip()
 
-    # 判断是否有嵌套子流程subgraph（是否有 'subgraph sub' 开头）
+    # 判斷是否存在巢狀子流程 subgraph（是否有 'subgraph sub' 開頭）
     if not re.search(r'subgraph\s+sub[^[]+\[', outer_content):
-        # 没有子流程，说明是普通节点流程，不拆分，保持原结构，只把subFlow改名为Flow即可
-        # 这里简单替换subgraph名称
+        # 若沒有子流程，代表為一般節點流程，不需拆分，保持原結構，只把subFlow改名為Flow即可
+        # 這裡僅簡單替換 subgraph 名稱
         return re.sub(r'subgraph\s+subFlow', 'subgraph Flow', flowchart)
 
-    # 如果有子流程，执行拆分合并逻辑
+    # 若存在子流程，則執行拆分與合併邏輯
 
-    # 提取所有子流程subgraph和其他顶层节点/连接
+    # 取得所有子流程 subgraph 與其他頂層節點／連線
     subgraphs = re.findall(r'(subgraph\s+sub[^[]+\[.*?\].*?end)', outer_content, re.S)
     other_lines = re.sub(r'subgraph\s+sub[^[]+\[.*?\].*?end', '', outer_content, flags=re.S).strip().splitlines()
 
-    # 清理空行和空格
+    # 清理空白行與多餘空格
     other_lines = [line.strip() for line in other_lines if line.strip()]
 
-    # 收集所有子流程里的节点标签，避免顶层重复节点
+    # 收集所有子流程中的節點標籤，避免頂層出現重複節點
     subflow_labels = set()
     for sg in subgraphs:
-        # 找子流程内部节点定义，格式类似 N3@{ label: 'sub_One' }
+        # 找出子流程內部的節點定義，格式類似 N3@{ label: 'sub_One' }
         nodes_in_sg = re.findall(r'\w+@\{\s*label:\s*\'([^\']+)\'\s*\}', sg)
         for label in nodes_in_sg:
             subflow_labels.add(label)
 
-    # 过滤掉顶层节点中，标签在子流程labels里的节点（即重复节点）
+    # 過濾頂層節點中，標籤已存在於子流程 labels 的節點（即重覆節點）
     filtered_lines = []
     for line in other_lines:
         m = re.match(r'(\w+)@\{\s*label:\s*\'([^\']+)\'\s*\}', line)
@@ -208,7 +208,7 @@ def merge_subflows(flowchart):
                 continue
         filtered_lines.append(line)
 
-    # 顶层连接关系和剩余节点分开
+    # 將頂層連線關係與剩餘節點分開
     connections = []
     nodes = []
     for line in filtered_lines:
@@ -217,17 +217,17 @@ def merge_subflows(flowchart):
         else:
             nodes.append(line)
 
-    # 构造输出
+    # 建立輸出內容
     output = ['flowchart TD']
-    # 输出所有子流程子图
+    # 輸出所有子流程子圖
     for sg in subgraphs:
         output.append(sg.strip())
-    # 父流程subgraph，名称改为 Flow
+    # 父流程 subgraph，名稱改為 Flow
     output.append('subgraph Flow')
     for node in nodes:
         output.append(f'    {node}')
 
-    # 把子流程作为节点连接到父流程的某节点（这里按你给的示例固定连接到 N5）
+    # 將子流程作為節點連接至父流程的某節點（這裡按你給的範例，固定連接到N5）
     sub_names = []
     for sg in subgraphs:
         name_match = re.match(r'subgraph\s+(sub[^[]+)\["([^"]+)"\]', sg)
@@ -240,7 +240,7 @@ def merge_subflows(flowchart):
         for sn in sub_names:
             output.append(f'    {sn[0]}["{sn[1]}"] --> N5')
 
-    # 保留顶层原有连接关系中未删节点相关的连接（简单过滤）
+    # 保留頂層原有連線關係中，仍存在節點的連線（簡單過濾）
     existing_nodes = set()
     for line in nodes:
         n = re.match(r'(\w+)@', line)
@@ -281,7 +281,7 @@ def build_mermaid(start, subgraph=True):
     def get_flow_name(node):
         nonlocal flow_ctr
         if node not in flow_names:
-            # 如果有 Name 属性且非空，优先使用它
+            # 若有 Name 屬性且不為空，則優先使用
             name = getattr(node, "Name", None)
             if name:
                 flow_names[node] = str(name)
@@ -374,10 +374,10 @@ def build_mermaid(start, subgraph=True):
 #         if isinstance(node, Flow):
 #             label = get_flow_name(node)
 #             if is_top:
-#                 # 顶层 Flow 只生成 subgraph，没单独节点行
+#                 # 最上層 Flow 僅產生 subgraph，不會另外建立節點
 #                 lines.append(f"{indent}subgraph sub{flow_names[node]}[\"{label}\"]")
 #             else:
-#                 # 子 Flow 先生成节点标签，再生成 subgraph
+#                 # 子 Flow 會先建立節點標籤，再建立 subgraph
 #                 lines.append(f"{indent}{nid}@{{ label: '{label}' }}")
 #                 lines.append(f"{indent}subgraph sub{flow_names[node]}[\"{label}\"]")
 

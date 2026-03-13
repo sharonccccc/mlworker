@@ -46,7 +46,7 @@ def Live(run_id:str,event:dict)->int:
 import aiohttp
 async def sendSocket(runId,data,s,timeout, semaphore):
     #print("1PUSH",runId)
-    async with semaphore:  # 使用信号量限制并发数量
+    async with semaphore:  # 使用 Semaphore（信號量）限制併發數量
         data['st'] = datetime.datetime.now().timestamp() 
         await asyncio.sleep(s)
         error = ""
@@ -88,7 +88,7 @@ def push(runId,data,timeout =(0.05, 0.3) ):
 import importlib
 
 async def Invoke(func,data,s,timeout,semaphore,pkg='tools'):
-    async with semaphore:  # 使用信号量限制并发数量
+    async with semaphore:  # 使用 Semaphore（信號量）限制併發數量
         await asyncio.sleep(s)
         data['st'] = datetime.datetime.now().timestamp() 
 
@@ -148,9 +148,9 @@ import json
 class PPrint:
     def __init__(self, interval_ms):
         """
-        interval_ms: 最小时间间隔（毫秒）
+        interval_ms: 最小間隔時間（毫秒）
         """
-        self.interval = interval_ms / 1000.0  # 转为秒
+        self.interval = interval_ms / 1000.0  # 轉為秒
         self.last_print_time = time.time()
 
     def print(self, *args, **kwargs):
